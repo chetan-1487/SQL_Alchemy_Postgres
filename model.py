@@ -7,11 +7,10 @@ engine = create_engine(conn_string)
 
 Base=declarative_base()
 
-class user(Base):
+class User(Base):
     __tablename__="client"
 
     id=Column(Integer,primary_key=True)
-    name=Column(String)
-    age=Column(Integer)
+    name=Column(String,nullable=False)
+    age=Column(Integer,nullable=False)
 
-Base.metadata.create_all(engine)
