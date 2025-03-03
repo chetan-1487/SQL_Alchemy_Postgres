@@ -1,35 +1,42 @@
-from sqlalchemy.orm import sessionmaker
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from pydantic import BaseModel  
-from model import engine,User
-from model import Base
+from model import User
+from database import engine,Session,Base
+import model
+from typing import Annotated
+from fastapi.security import OAuth2PasswordBearer
+
+JWT_Secrets="markus"
+Algorithm="HS256"
+
+auth_scheme=OAuth2PasswordBearer(tokenUrl="token")
+
+# is used to create database session object that interact with databases
+session=Session()
+model.Base.metadata.create_all(engine)
 
 app=FastAPI()
-# is used to create database session object that interact with databases
-Session=sessionmaker(bind=engine)
-session=Session()
-Base.metadata.create_all(engine)
 
 users=session.query(User).all()
 
-class post(BaseModel):
-    id:int
+class Post(BaseModel):
     name:str
     age:int
 
 @app.get("/sqlalchemy")
-def read_data():
-    return {"data":users[0].id}
+def read_data(token:Annotated[str,Depends(auth_scheme)]):
+    return {"data":users[0].id , "token":token}
 
 @app.post("/Insert_data")
-def insert_data(data:post):
-    new_user=User(id=data.id,name=data.name,age=data.age)
+def insert_data(data: Post):
+    new_user = User(name=data.name, age=data.age)  # Removed 'id'
     session.add(new_user)
     session.commit()
-    return {"data":"inserted"}
+    return {"data": "inserted"}
+
 
 @app.put("/update_data/{id}")
-def update(id:int,data:post):
+def update(id:int,data:Post):
     user_data=session.query(User).filter(User.id==id).first()
     print(user_data)
     if user_data:
