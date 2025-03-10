@@ -1,9 +1,16 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-conn_string = "postgresql://postgres:chetan@127.0.0.1:5432/chetan"
-engine = create_engine(conn_string)
+conn="postgresql://postgres:chetan@127.0.0.1:5432/chetan"
+engine=create_engine(conn)
 
-Session = sessionmaker(bind=engine)  # Prevent unexpected commits
+session=sessionmaker(bind=engine)
 
-Base = declarative_base()
+Base=declarative_base()
+
+def get_db():
+    db = session()
+    try:
+        yield db
+    finally:
+        db.close()

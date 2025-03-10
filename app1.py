@@ -1,66 +1,50 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from model import User
-from database import engine, Session as SessionLocal, Base
-from typing import Annotated
-from fastapi.security import OAuth2PasswordBearer
-import schemas
+from database import session, engine
+import model, crud, schemas
 
-JWT_SECRET = "markus"
-ALGORITHM = "HS256"
-
-auth_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-# Create tables if they don't exist
-Base.metadata.create_all(engine)
+# Create database tables
+model.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Dependency injection for database session
+# Dependency to get the database session
 def get_db():
-    db = SessionLocal()
+    db = session()
     try:
         yield db
     finally:
         db.close()
 
-@app.get("/sqlalchemy")
-def read_data(db: Session = Depends(get_db)):
-    users = db.query(User).all()
-    if not users:
-        raise HTTPException(status_code=404, detail="No users found")
-    return {"data": users[0].id}
+@app.get("/")
+def home():
+    return {"message": "Welcome to the API"}
 
-@app.post("/Insert_data")
-def insert_data(data: schemas.Post, db: Session = Depends(get_db)):
-    new_user = User(name=data.name, age=data.age)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return {"data": f"User {new_user.id} inserted"}
+# Create a new item
+@app.post("/items/", response_model=schemas.Item)
+def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
+    return crud.create_item(db=db, item=item)
 
-@app.put("/update_data/{id}")
-def update(id: int, data: schemas.Update_Post, db: Session = Depends(get_db)):
-    user_data = db.query(User).filter(User.id == id).first()
-    if not user_data:
-        raise HTTPException(status_code=404, detail="User not found")
+# Read an item by ID
+@app.get("/items/{item_id}", response_model=schemas.Item)
+def read_item(item_id: int, db: Session = Depends(get_db)):
+    db_item = crud.get_item(db, item_id=item_id)
+    if db_item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return db_item
 
-    # Ensure we are modifying an instance of User
-    setattr(user_data, "name", data.name)
-    setattr(user_data, "age", data.age)
+# Read all items
+@app.get("/items/", response_model=list[schemas.Item])
+def read_items(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return crud.get_items(db, skip=skip, limit=limit)
 
-    db.commit()
-    db.refresh(user_data)  # Refresh to update session state
+# Update an item
+@app.put("/items/{item_id}", response_model=schemas.Item)
+def update_item(item_id: int, item: schemas.ItemUpdate, db: Session = Depends(get_db)):
+    return crud.update_item(db=db, item_id=item_id, item=item)
 
-    return {"data": "updated"}
-
-
-
-@app.delete("/delete_data/{id}")
-def delete(id: int, db: Session = Depends(get_db)):
-    user_data = db.query(User).filter(User.id == id).first()
-    if user_data:
-        db.delete(user_data)
-        db.commit()
-        return {"data": "deleted"}
-    raise HTTPException(status_code=404, detail="User not found")
+# Delete an item
+@app.delete("/items/{item_id}")
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    crud.delete_item(db=db, item_id=item_id)
+    return {"message": "Item deleted successfully"}

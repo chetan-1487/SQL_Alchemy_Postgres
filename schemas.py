@@ -1,11 +1,17 @@
+# schema.py
 from pydantic import BaseModel
 
-class Post(BaseModel):
+class ItemBase(BaseModel):
     name: str
-    age: int
+    description: str | None = None
 
-class Create_Post(Post):  # Inherit to avoid redundancy
-    id: int
-
-class Update_Post(Post):  # Inherit from Post
+class ItemCreate(ItemBase):
     pass
+
+class ItemUpdate(ItemBase):
+    pass
+
+class Item(ItemBase):
+    id: int
+    class Config:
+        orm_mode = True
