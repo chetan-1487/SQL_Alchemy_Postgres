@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from .. import model, schemas, utils
+from .. import model, schemas, utils, auth2
 from sqlalchemy.orm import Session
 from ..database import get_db
 from typing import List
@@ -19,8 +19,8 @@ def get_post(db:Session=Depends(get_db)):
 #     post=my_posts[len(my_posts)-1]
 #     return {"detail":post}
 
-@router.get("/{id}",response_model=List[schemas.Post])
-def get_post_id(id:int,db:Session=Depends(get_db)):
+@router.get("/{id}",response_model=schemas.Post)
+def get_post_id(id:int,db:Session=Depends(get_db),current_user:int=Depends(auth2.get_current_user)):
     # post=find_post(id)
 
     curr_post=db.query(model.Post).filter(model.Post.id==id).first()
@@ -33,9 +33,11 @@ def get_post_id(id:int,db:Session=Depends(get_db)):
     return curr_post
 
 @router.post("/",status_code=status.HTTP_201_CREATED,response_model=schemas.Post)
-def create_post(post:schemas.PostCreate,db:Session=Depends(get_db)):
+def create_post(post:schemas.PostCreate,db:Session=Depends(get_db),current_user:int=Depends(auth2.get_current_user)):
 
-    new_post=model.Post(title=post.title,content=post.content,published=post.published)
+    print(current_user)
+    new_post=model.Post(**post.model_dump())
+    # new_post=model.Post(title=post.title,content=post.content,published=post.published)
     # post_dict=post.model_dump() # model_dump is used instead of dict
     # post_dict["id"]=randrange(0,1000000)
     # my_posts.append(post_dict)
@@ -45,7 +47,7 @@ def create_post(post:schemas.PostCreate,db:Session=Depends(get_db)):
     return new_post
 
 @router.put("/{id}",response_model=schemas.Post)
-def update_post(id:int,updated_post:schemas.PostCreate,db:Session=Depends(get_db)):
+def update_post(id:int,updated_post:schemas.PostCreate,db:Session=Depends(get_db),current_user:int=Depends(auth2.get_current_user)):
     # index=find_index_post(id)
     # post_dict=post.model_dump()
     # post_dict['id']=id
@@ -60,7 +62,7 @@ def update_post(id:int,updated_post:schemas.PostCreate,db:Session=Depends(get_db
     return post_query.first()
 
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id:int,db:Session=Depends(get_db)):
+def delete_post(id:int,db:Session=Depends(get_db),current_user:int=Depends(auth2.get_current_user)):
     # index=find_index_post(id)
     post=db.query(model.Post).filter(model.Post.id==id)
     if post.first() == None:
