@@ -13,12 +13,12 @@ def find_post(id):
     for p in my_posts:
         if p['id']==id:
             return p
-
+        
 def find_index_post(id):
     for i,p in enumerate(my_posts):
         if p['id']==id:
             return i
-        
+    
 
 app.include_router(post.router)
 app.include_router(user.router)
