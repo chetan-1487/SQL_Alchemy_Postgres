@@ -1,5 +1,5 @@
 # model.py
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean,ForeignKey
 from .database import Base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
@@ -11,6 +11,7 @@ class Post(Base):
     content=Column(String,nullable=False)
     published=Column(Boolean,default=True)
     created_At=Column(TIMESTAMP(timezone=True),nullable=False,server_default=text('now()'))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
 class User(Base):
     __tablename__="users"

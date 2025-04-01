@@ -35,8 +35,7 @@ def get_post_id(id:int,db:Session=Depends(get_db),current_user:int=Depends(auth2
 @router.post("/",status_code=status.HTTP_201_CREATED,response_model=schemas.Post)
 def create_post(post:schemas.PostCreate,db:Session=Depends(get_db),current_user:int=Depends(auth2.get_current_user)):
 
-    print(current_user)
-    new_post=model.Post(**post.model_dump())
+    new_post=model.Post(**post.model_dump(),user_id=current_user.id)
     # new_post=model.Post(title=post.title,content=post.content,published=post.published)
     # post_dict=post.model_dump() # model_dump is used instead of dict
     # post_dict["id"]=randrange(0,1000000)
