@@ -27,7 +27,7 @@ app.include_router(auth.router)
 
 @app.get("/",description="This is my first route") #we can fast description in fastapi port
 def root():
-    return {"Message":"Successfully completed"}
+    return {"Message":"Successfully Running FastAPI"}
 
 # @app.post("/create")
 # def create_post(payload:dict=Body(...)):
