@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV=/home/chetan/Desktop/Postgesql_with_ORM/.venv
+VIRTUAL_ENV=/home/chetan/Desktop/SQL_Alchemy_Postgres/.venv
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

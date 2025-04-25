@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/chetan/Desktop/Postgesql_with_ORM/.venv
+set -gx VIRTUAL_ENV /home/chetan/Desktop/SQL_Alchemy_Postgres/.venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH
